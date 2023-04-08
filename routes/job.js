@@ -256,7 +256,11 @@ router.delete('/delete-job/:id', admin,
 //####list jobs
 router.get('/get-jobs',autharized ,async (req, res) => {
   const query = util.promisify(conn.query).bind(conn);
-  const jobs = await query("select * from job ");
+  let search = "";
+  if (req.query.search) {
+    search = `where position LIKE '%${req.query.search}%' or description LIKE '%${req.query.search}%'`;
+  }
+  const jobs = await query(`select * from job ${search}`);
   jobs.map((job)=>{
     job.image_url="http://" + req.hostname + ":4000/" + job.image_url;
   });

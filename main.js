@@ -23,12 +23,8 @@ const cors =require("cors");
 app.use(cors());
 app.use(express.static("upload"));
 //##########require modules#########
-// const admin=require("./middleware/admin.js");
-// app.use("",admin);
 const user=require("./middleware/user.js");
 app.use("",user);
-// const userAuth=require("./middleware/userAuthontication.js");
-// app.use("",userAuth);
 const job=require("./routes/job.js");
 app.use("",job);
 const auth=require("./routes/auth.js");
