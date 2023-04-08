@@ -10,13 +10,30 @@
 // const url=require("url");
 // const q=url.parse("http://localhost:4000/");
 // console.log(q);
+// const bodyParser = require('body-parser');
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json())
+//################initialize express app#######
 const express = require('express');
 const app = express();
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json())
-const jobs=require("./routes/admin.js");
-app.use("",jobs);
+//########global middelware#########
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+const cors =require("cors");
+app.use(cors());
+app.use(express.static("upload"));
+//##########require modules#########
+// const admin=require("./middleware/admin.js");
+// app.use("",admin);
+const user=require("./middleware/user.js");
+app.use("",user);
+// const userAuth=require("./middleware/userAuthontication.js");
+// app.use("",userAuth);
+const job=require("./routes/job.js");
+app.use("",job);
+const auth=require("./routes/auth.js");
+app.use("",auth);
+///////////to run app/////////////
 app.listen(4000, "localhost", () => {
 
     console.log("server is running");
