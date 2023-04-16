@@ -33,7 +33,7 @@ router.post("/create-job",admin,upload.single("image"),
         const newJob = {
           position: req.body.position,
           description: req.body.description,
-          offer:req.body.description,
+          offer:req.body.offer,
           qualification:req.body.qualification,
           max_candidate_number:req.body.max_candidate_number,
           image_url: req.file.filename,
@@ -148,9 +148,7 @@ router.put('/update-job-offer/:id',admin,
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const jobs = await query("select * from job where id = ?", [
-        req.params.id,
-      ]);
+      const jobs = await query("select * from job where id = ?", [req.params.id,]);
       if (!jobs[0]) {
         res.status(404).json({ ms: "job not found !" });
       }
@@ -211,6 +209,7 @@ router.put('/update-job-image_url/:id',admin,
       const jobs = await query("select * from job where id = ?", [
         req.params.id,
       ]);
+      // req.send(jobs[0]);
       if (!jobs[0]) {
         res.status(404).json({ ms: "job not found !" });
       }
@@ -220,7 +219,7 @@ router.put('/update-job-image_url/:id',admin,
 
       if (req.file) {
         jobObj.image_url = req.file.filename;
-        fs.unlinkSync("../upload" + jobs[0].image_url); // delete old image
+        // fs.unlinkSync("../upload" + jobs[0].image_url); // delete old image
       }
       await query("update job set ? where id = ?", [jobObj, jobs[0].id]);
 
@@ -243,7 +242,7 @@ router.delete('/delete-job/:id', admin,
       if (!jobs[0]) {
         res.status(404).json({ ms: "job not found !" });
       }
-      fs.unlinkSync("../upload" + jobs[0].image_url); // delete old image
+      // fs.unlinkSync("../upload" + jobs[0].image_url); // delete old image
       await query("delete from job where id = ?", [jobs[0].id]);
       res.status(200).json({
         msg: "job delete successfully",
@@ -267,38 +266,38 @@ router.get('/get-jobs',autharized ,async (req, res) => {
   res.status(200).json(jobs);
 });
 //###########review for job
-router.post('/review-job',user,
-  body("job_id").isNumeric().withMessage("please enter a valid job ID"),
-  body("review").isString().withMessage("please enter a valid Review"),
-  async (req, res) => {
-    try {
-      const query = util.promisify(conn.query).bind(conn);
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-      /////check job found or not
-      const jobs = await query("select * from job where id = ?", [
-        req.body.job_id,
-      ]);
-      if (!jobs[0]) {
-        res.status(404).json({ ms: "job not found !" });
-      }
+// router.post('/review-job',user,
+//   body("job_id").isNumeric().withMessage("please enter a valid job ID"),
+//   body("review").isString().withMessage("please enter a valid Review"),
+//   async (req, res) => {
+//     try {
+//       const query = util.promisify(conn.query).bind(conn);
+//       const errors = validationResult(req);
+//       if (!errors.isEmpty()) {
+//         return res.status(400).json({ errors: errors.array() });
+//       }
+//       /////check job found or not
+//       const jobs = await query("select * from job where id = ?", [
+//         req.body.job_id,
+//       ]);
+//       if (!jobs[0]) {
+//         res.status(404).json({ ms: "job not found !" });
+//       }
 
-      // 3 - PREPARE MOVIE REVIEW OBJECT
-      const reviewObj = {
-        user_id: res.locals.user.id,
-        job_id: jobs[0].id,
-        review: req.body.review,
-      };
-      await query("insert into user_job set ?", reviewObj);
+//       // 3 - PREPARE MOVIE REVIEW OBJECT
+//       const reviewObj = {
+//         user_id: res.locals.user.id,
+//         job_id: jobs[0].id,
+//         review: req.body.review,
+//       };
+//       await query("insert into user_job set ?", reviewObj);
 
-      res.status(200).json({
-        msg: "review added successfully !",
-      });
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  }
-);
+//       res.status(200).json({
+//         msg: "review added successfully !",
+//       });
+//     } catch (err) {
+//       res.status(500).json(err);
+//     }
+//   }
+// );
 module.exports=router;

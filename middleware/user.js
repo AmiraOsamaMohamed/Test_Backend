@@ -106,7 +106,7 @@ router.put('/update-user-email/:id', admin,
         );
                 //////////////////update password of user////////////
 router.put('/update-user-password/:id', admin,
-body("password").isLength({ min: 8, max: 10 }).withMessage("password should be between (8-10) character"),
+         body("password").isLength({ min: 8, max: 10 }).withMessage("password should be between (8-10) character"),
                 async (req, res) => {
                   try {
                     const query = util.promisify(conn.query).bind(conn);
@@ -120,8 +120,9 @@ body("password").isLength({ min: 8, max: 10 }).withMessage("password should be b
                     if (!users[0]) {
                       res.status(404).json({ ms: "user not found !" });
                     }
+
                     const userObj = {
-                        password: await bcrypt.hash(req.body.password, 10),
+                        password:req.body.password             //await bcrypt.hash(req.body.password, 10),
                     };
               
                     await query("update user set ? where id = ?", [userObj, users[0].id]);

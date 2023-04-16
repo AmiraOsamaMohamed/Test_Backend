@@ -71,7 +71,7 @@ auth.post(
           errors: [{msg: "email not found"}]
         });
       }else{
-        const checkPassword = await bcrypt.compare(user[0].password,req.body.password);
+        const checkPassword = await bcrypt.compare(req.body.password,user[0].password);
         if (checkPassword) {
           delete user[0].password;
           res.status(200).json(user[0]);
