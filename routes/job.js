@@ -265,6 +265,71 @@ router.get('/get-jobs',autharized ,async (req, res) => {
   });
   res.status(200).json(jobs);
 });
+
+
+// SHOW job attributes
+///////1-SHOW JOB-DECRIPTION///////
+router.get("/job-description/:id", async (req, res) => {
+  const query = util.promisify(conn.query).bind(conn);
+  const jobDesciption = await query("select * from job where id = ?", [
+    req.params.id,
+  ]);
+  if (!jobDesciption[0]) {
+    res.status(404).json({ ms: "job description not found !" });
+  }
+  res.status(200).json(jobDesciption[0].description);
+});
+
+///////2-SHOW JOB-POSITION///////
+router.get("/job-position/:id", async (req, res) => {
+  const query = util.promisify(conn.query).bind(conn);
+  const jobPosition = await query("select * from job where id = ?", [
+    req.params.id,
+  ]);
+  if (!jobPosition[0]) {
+    res.status(404).json({ ms: "job position not found !" });
+  }
+  res.status(200).json(jobPosition[0].position);
+});
+
+///////3-SHOW JOB-OFFER///////
+router.get("/job-offer/:id", async (req, res) => {
+  const query = util.promisify(conn.query).bind(conn);
+  const jobOffer = await query("select * from job where id = ?", [
+    req.params.id,
+  ]);
+  if (!jobOffer[0]) {
+    res.status(404).json({ ms: "job offer not found !" });
+  }
+  res.status(200).json(jobOffer[0].offer);
+});
+
+///////4-SHOW JOB-NUMBER-OF-APPLICANTS///////
+  router.get("/job-num-of-applicants/:id", async (req, res) => {
+    const query = util.promisify(conn.query).bind(conn);
+    const jobNumOfApplicants = await query("select * from job where id = ?", [
+      req.params.id,
+    ]);
+    if (!jobNumOfApplicants[0]) {
+      res.status(404).json({ ms: "number of applicants for this job is not found !" });
+    }
+    res.status(200).json(jobNumOfApplicants[0].max_candidate_number);
+  });
+
+
+///////SHOW JOB QUALIFICATION///////
+router.get("/job-qualification/:id", async (req, res) => {
+  const query = util.promisify(conn.query).bind(conn);
+  const jobQualification = await query("select * from job where id = ?", [
+    req.params.id,
+  ]);
+  if (!jobQualification[0]) {
+    res.status(404).json({ ms: "job qualifications not found !" });
+  }
+  res.status(200).json(jobQualification[0].qualification);
+});
+
+
 //###########review for job
 // router.post('/review-job',user,
 //   body("job_id").isNumeric().withMessage("please enter a valid job ID"),
@@ -300,4 +365,19 @@ router.get('/get-jobs',autharized ,async (req, res) => {
 //     }
 //   }
 // );
+ 
+
+///////Show-job-review///////
+// router.get("/job-reviews/:id", async (req, res) => {
+//   const query = util.promisify(conn.query).bind(conn);
+//   const jobReview = await query("select * from user_job where id = ?", [
+//     req.params.id,
+//   ]);
+//   if (!jobReview[0]) {
+//     res.status(404).json({ ms: "job review not found !" });
+//   }
+//   res.status(200).json(jobReview[0].review);
+// });
+
+
 module.exports=router;
