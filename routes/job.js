@@ -365,19 +365,6 @@ router.get("/job-qualification/:id", async (req, res) => {
 //     }
 //   }
 // );
- 
-
-///////Show-job-review///////
-// router.get("/job-reviews/:id", async (req, res) => {
-//   const query = util.promisify(conn.query).bind(conn);
-//   const jobReview = await query("select * from user_job where id = ?", [
-//     req.params.id,
-//   ]);
-//   if (!jobReview[0]) {
-//     res.status(404).json({ ms: "job review not found !" });
-//   }
-//   res.status(200).json(jobReview[0].review);
-// });
 
 
 module.exports=router;
