@@ -4,16 +4,7 @@ const conn = require("../db/connection");
 const { body, validationResult } = require("express-validator");
 const admin=require("./admin");
 const util=require("util");
-/////////////////////////////////////////////////////////////////////////////////////
-// const firstName =document.getElementsByClassName('first-name');
-// const lastName =document.getElementsByClassName('last-name');
-// const email =document.getElementsByClassName('email');
-// const password =document.getElementsByClassName('password');
-// const phone= document.getElementsByClassName('number');
-// const skill =document.getElementsByClassName('skills');
-// const aboutYou=document.getElementsByClassName('ABout you');
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
      //////////////////update first name of user////////////
 router.put('/update-user-firstName/:id', admin,
      body("firstName").isString().withMessage("please enter a valid first name"),
@@ -315,4 +306,5 @@ router.get('/get-users',admin ,async (req, res) => {
   const users = await query("select * from user ");
   res.status(200).json(users);
 });
+
           module.exports = router;

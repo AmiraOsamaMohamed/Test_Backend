@@ -8,6 +8,7 @@ const { body, validationResult } = require("express-validator");
 const upload=require("../middleware/uploadImages");
 const util = require('util'); // helper
 const fs = require('fs'); // file system
+const {constant}=require("buffer");
 ///////###############create job
 router.post("/create-job",admin,upload.single("image"),           
     body("position").isString().withMessage("please enter a valid job position"),
@@ -265,39 +266,133 @@ router.get('/get-jobs',autharized ,async (req, res) => {
   });
   res.status(200).json(jobs);
 });
-//###########review for job
-// router.post('/review-job',user,
-//   body("job_id").isNumeric().withMessage("please enter a valid job ID"),
-//   body("review").isString().withMessage("please enter a valid Review"),
-//   async (req, res) => {
-//     try {
-//       const query = util.promisify(conn.query).bind(conn);
-//       const errors = validationResult(req);
-//       if (!errors.isEmpty()) {
-//         return res.status(400).json({ errors: errors.array() });
-//       }
-//       /////check job found or not
-//       const jobs = await query("select * from job where id = ?", [
-//         req.body.job_id,
-//       ]);
-//       if (!jobs[0]) {
-//         res.status(404).json({ ms: "job not found !" });
-//       }
+//show job_application
+router.get("/job/aboutUser",
+    admin,
+    async (req, res) => {
+        try {
+            const query = util.promisify(conn.query).bind(conn);
+            const requestedJobs = await query(
+              (`SELECT acceptance,position,qualification,skill,aboutYou,firstName,job_id from user join job_application
+            on user.id=user_id join job on job_id=job.id` ));
+            res.status(200).json(requestedJobs);
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err);
+        }
 
-//       // 3 - PREPARE MOVIE REVIEW OBJECT
-//       const reviewObj = {
-//         user_id: res.locals.user.id,
-//         job_id: jobs[0].id,
-//         review: req.body.review,
-//       };
-//       await query("insert into user_job set ?", reviewObj);
+    }
+)
 
-//       res.status(200).json({
-//         msg: "review added successfully !",
-//       });
-//     } catch (err) {
-//       res.status(500).json(err);
-//     }
-//   }
-// );
+//SHOW REQUESED JOBS
+router.get("/job/requestedJobs",
+    user,
+    async (req, res) => {
+        try {
+            const query = util.promisify(conn.query).bind(conn);
+            let userId = res.locals.user.id;
+            const requestedJobs = await query(`SELECT * FROM job 
+                JOIN 
+                (SELECT job_id FROM job_application WHERE user_id = ?) as users_jobs
+                ON job.id = users_jobs.job_id`, [
+                userId,
+            ]);
+            res.status(200).json(requestedJobs);
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err);
+        }
+
+    }
+)
+
+// SHOW job [ADMIN, USER]
+router.get("/job/getJob/:id", async (req, res) => {
+    const query = util.promisify(conn.query).bind(conn);
+    const job = await query("select * from job where id = ?", [
+        req.params.name,
+    ]);
+    if (!job[0]) {
+        res.status(404).json({ ms: "job not found!" });
+    }
+    //job[0].image_url = "http://" + req.hostname + ":4000/" + job[0].image_url;
+
+    res.status(200).json(job[0]);
+});
+
+//   // MAKE apply [ADMIN, USER]
+router.post("/job/apply",
+    user,
+    body("job_id").isNumeric().withMessage("please enter a valid Job ID"),
+    async (req, res) => {
+        try {
+            const query = util.promisify(conn.query).bind(conn);
+            // 1- VALIDATION REQUEST [manual, express validtion]
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            // 2- CHECK IF job EXISTS OR NOT
+            const job = await query("select * from job where id = ?", [
+                req.body.job_id,
+            ]);
+            if (!job[0]) {
+                res.status(404).json({ ms: "job not found !" });
+            }
+            //3- check the number of applicaint to this job 
+            const Number_applicaint = await query("select count(job_id) from job_application where job_id =? ",
+                [req.body.job_id]);
+            if (Number_applicaint >= 10) {
+                res.status(400).json({ ms: "Job is not available anymore" });
+            }
+            // 4 - PREPARE job apply OBJECT
+            const applyObj = {
+                user_id: res.locals.user.id,
+                job_id: job[0].id
+            };
+
+            // 4- INSERT job OBJECT INTO DATABASE
+            await query("insert into job_application set ?", applyObj);
+
+            res.status(200).json({
+                msg: "apply added successfully !",
+            });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err);
+        }
+    }
+);
+//###########update in acceptance of job
+router.put('/update-job-acceptance/:id', admin,
+  body("acceptance").isBoolean().withMessage("please enter a valid job acceptance"),
+  async (req, res) => {
+    try {
+      const query = util.promisify(conn.query).bind(conn);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      const jobs = await query("select * from job_application where id = ?", [
+        req.params.id,
+      ]);
+      if (!jobs[0]) {
+        res.status(404).json({ ms: "job not found !" });
+      }
+      const jobObj = {
+        acceptance: req.body.acceptance,
+      };
+
+      await query("update job_application set ? where id = ?", [jobObj, jobs[0].id]);
+
+      res.status(200).json({
+        msg: "Acceptance updated successfully",
+      });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+);
+
 module.exports=router;
